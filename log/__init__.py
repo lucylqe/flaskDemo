@@ -6,6 +6,7 @@ try:
 except:
     colorlog = None
 
+
 from logging import getLogger, Formatter, StreamHandler, LoggerAdapter
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 
@@ -14,25 +15,30 @@ logsdir = os.path.join(curdir, 'logfiles')
 if not os.path.exists(logsdir):
     os.mkdir(logsdir)
 
+# import werkzeug.serving
 # 防止flask 对日志加控制台颜色； 输出到文件后可能会有一些不必要的颜色信息
 # 调用链 [send_response, python3.6/site-packages/werkzeug/serving.py:332] -> [log_request, serving.py:373] -> [log, serving.py:384] -> [_log, _internal.py:88]
 # 其中log_request函数会对 msg 用termcolor模块加控制台颜色
 os.environ['ANSI_COLORS_DISABLED'] = 'true'
 
+# FLASK_DEBUG 模式下 会出现多日志问题werkzeug 造成
+# _internal.py:85 执行时间有可能早于root创建时间 就会增加StreamHandler 和root的StreamHandler冲突
+werkzeug = logging.getLogger('werkzeug')
+werkzeug.setLevel(logging.NOTSET)
+werkzeug.handlers.clear()
 
-# logging.getLogger = lambda name:LoggerAdapter(getLogger(name), {'userid': 'default'})
 
-def get_logger(name, filename=None, clear_handlers=False, special_formatter=True):
+def get_logger(name, filename=None, clear_handlers=False, userid_format=True):
     filename = filename or name
     filepath = os.path.join(curdir, 'logfiles', f"{filename}")
 
-    if special_formatter:
+    if userid_format:
         formatter = f'%(asctime)s|%(process)d|%(filename)s|nm:%(lineno)d|%(levelname)s|%(userid)s|%(message)s'
     else:
         formatter = f'%(asctime)s|%(process)d|%(filename)s|nm:%(lineno)d|%(levelname)s|%(message)s'
     formatter_color = f'%(log_color)s' + formatter
 
-    logger = logging.getLogger(name)
+    logger = colorlog.getLogger(name)
     # 防止信息往上级传递 eg: root loger
     # 如果配置上级logger，就会输出两边
     logger.propagate = False
@@ -99,12 +105,6 @@ def get_logger(name, filename=None, clear_handlers=False, special_formatter=True
     # LoggerAdapter 每个用户可以持有一个adapter. 便可添加额外信息
     # new_loger=LoggerAdapter(logger.logger, {'userid':'liqe'})
     return LoggerAdapter(logger, {'userid': 'default'})
-
-
-# Flask框架在处理完请求后，调用了werkzeug库的_log函数；用的root loger即name=None
-# app.logger.debug('a') 用的是名称为flask.app的logger
-# init root logger
-_ = get_logger(None, filename='access', clear_handlers=True, special_formatter=False)
 
 if __name__ == '__main__':
     a = get_logger('test1')
