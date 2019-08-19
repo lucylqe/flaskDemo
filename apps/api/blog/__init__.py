@@ -1,7 +1,6 @@
-from apps.libs.register_blueprint import NestableBlueprint
-blueprint = bp = NestableBlueprint(cur_name=__name__,cur_file=__file__)
+from flask_restful import Resource
 
 
-@bp.route('/')
-def index():
-    return str(__name__)
+class HelloWorld(Resource):
+    def get(self):
+        return {'hello': 'world'}

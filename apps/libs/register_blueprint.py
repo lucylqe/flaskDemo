@@ -22,13 +22,14 @@ class NestableBlueprint(Blueprint):
                                                 template_folder, url_prefix, subdomain,
                                                 url_defaults, root_path)
 
-    def register_blueprint(self, blueprint, **options):
-        def deferred(state):
-            url_prefix = (state.url_prefix or u"") + \
-                         (options.get('url_prefix', blueprint.url_prefix) or u"")
-            if 'url_prefix' in options:
-                del options['url_prefix']
-
-            state.app.register_blueprint(blueprint, url_prefix=url_prefix, **options)
-
-        self.record(deferred)
+    # def register_blueprint(self, blueprint, **options):
+    #     # 重写 register_blueprint 来支持嵌套蓝图；放弃，用其他方式加载多级蓝图
+    #     def deferred(state):
+    #         url_prefix = (state.url_prefix or u"") + \
+    #                      (options.get('url_prefix', blueprint.url_prefix) or u"")
+    #         if 'url_prefix' in options:
+    #             del options['url_prefix']
+    #
+    #         state.app.register_blueprint(blueprint, url_prefix=url_prefix, **options)
+    #
+    #     self.record(deferred)

@@ -34,7 +34,8 @@ def make_app():
     register_blueprints('apps', app)
 
     # 加载第三方扩展
-    from extension import mysqldb, esdb
+    from extension import api, mysqldb, esdb
+    api.init_app(app)
     mysqldb.init_app(app)
     esdb.init_app(app)
 

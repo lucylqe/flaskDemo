@@ -7,5 +7,6 @@ import flask_httpauth
 import flask_elasticsearch
 
 
+api = flask_restful.Api()
 mysqldb = flask_sqlalchemy.SQLAlchemy()
 esdb = flask_elasticsearch.FlaskElasticsearch()
