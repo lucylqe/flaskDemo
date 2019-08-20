@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-hello world1
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+    <ul>
+        <li><a href="{{ url_for('main.test_form') }}">Form</a></li>
+        <li><a href="{{ url_for('main.test_nav') }}">Nav</a></li>
+        <li><a href="{{ url_for('main.test_pagination') }}">Pagination</a></li>
+        <li><a href="{{ url_for('main.test_utils') }}">Utils</a></li>
+    </ul>
+{% endblock %}

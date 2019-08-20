@@ -3,7 +3,6 @@ from flask import request, abort, jsonify, url_for
 from apps.user import bp
 from apps.user.model import User, db
 
-
 @bp.route('/register', methods = ['POST'])
 def register():
     username = request.json.get('username')

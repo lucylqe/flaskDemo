@@ -24,6 +24,22 @@ def register_blueprints(root, app):
             app.register_blueprint(mod.blueprint, url_prefix=prefix)
 
 
+# 优先使用当前蓝图的模板
+# def improve_blueprint_template_nice(app):
+#     def before_request():
+#         from flask import request
+#         if request.blueprint is not None:
+#             bp = app.blueprints[request.blueprint]
+#             if bp.jinja_loader is not None:
+#                 newsearchpath = bp.jinja_loader.searchpath + app.jinja_loader.searchpath[-1:]
+#                 app.jinja_loader.searchpath = newsearchpath
+#                 print(app.jinja_loader.searchpath)
+#             else:
+#                 app.jinja_loader.searchpath = app.jinja_loader.searchpath[-1:]
+#         else:
+#             app.jinja_loader.searchpath = app.jinja_loader.searchpath[-1:]
+#     return before_request
+
 def make_app():
     from flask import Flask
     app = Flask(__name__)
@@ -35,10 +51,15 @@ def make_app():
     register_blueprints('apps', app)
 
     # 加载第三方扩展
-    from extension import api, mysqldb, esdb
+    from extension import api, mysqldb, esdb, bootstrap
     api.init_app(app)
     mysqldb.init_app(app)
     esdb.init_app(app)
+    bootstrap.init_app(app)
 
+    #提高蓝图模板优先级
+    # app.before_request(improve_blueprint_template_nice(app))
+
+    #打印urls映射
     print(app.url_map)
     return app
