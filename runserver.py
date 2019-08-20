@@ -8,8 +8,8 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 # Flask框架在处理完请求后，调用了werkzeug库的_log函数；用的root loger即name=None
 # apps.logger.debug('a') 用的是名称为flask.app的logger
 from log import get_logger
-_ = get_logger(None, filename='access', clear_handlers=True, userid_format=False)
 
+logger = get_logger(name=None, clear_handlers=True)
 
 
 def register_blueprints(root, app):
@@ -19,16 +19,17 @@ def register_blueprints(root, app):
     for name in chain([root], find_modules(root, recursive=True, include_packages=True)):
         mod = import_string(name)
         if hasattr(mod, 'blueprint'):
-            name = name[len(root)+1:]
+            name = name[len(root) + 1:]
             prefix = "/" + "/".join(name.split('.'))
             app.register_blueprint(mod.blueprint, url_prefix=prefix)
+
 
 def make_app():
     from flask import Flask
     app = Flask(__name__)
 
-    from setting import conf
-    app.config.from_object(conf)
+    from setting import config
+    app.config.from_object(config)
 
     # 注册试图路由
     register_blueprints('apps', app)
@@ -39,4 +40,5 @@ def make_app():
     mysqldb.init_app(app)
     esdb.init_app(app)
 
+    print(app.url_map)
     return app

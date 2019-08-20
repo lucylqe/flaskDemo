@@ -1,7 +1,10 @@
 import os
 ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 
-class Config:
+class Config(dict):
+    def __init__(self):
+        dict.__init__(self)
+
     DEBUG = True
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
 
@@ -15,6 +18,13 @@ class Config:
     @staticmethod
     def init_app(app):
         pass
+
+    def __getitem__(self, item):
+        try:
+            return dict.__getitem__(self, item)
+        except KeyError:
+            return getattr(self, item)
+
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -33,8 +43,8 @@ confmap = {
 }
 
 import os
-version = os.environ.get('FLASK_ENV', 'development')
-conf = confmap.get(version)
+env = os.environ.get('FLASK_ENV', 'development')
+config = confmap.get(env)()
 
 
 

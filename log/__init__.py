@@ -6,7 +6,6 @@ try:
 except:
     colorlog = None
 
-
 from logging import getLogger, Formatter, StreamHandler, LoggerAdapter
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 
@@ -27,9 +26,16 @@ werkzeug = logging.getLogger('werkzeug')
 werkzeug.setLevel(logging.NOTSET)
 werkzeug.handlers.clear()
 
+_loggers = {}
 
-def get_logger(name, filename=None, clear_handlers=False, userid_format=True):
-    filename = filename or name
+
+def get_logger(name=None, filename='access', clear_handlers=False, userid_format=False):
+    key = "{}{}".format(name, filename)
+    if not clear_handlers and key in _loggers:
+        logger = _loggers[key]
+        assert isinstance(logger, LoggerAdapter)
+        return logger
+
     filepath = os.path.join(curdir, 'logfiles', f"{filename}")
 
     if userid_format:
@@ -42,7 +48,7 @@ def get_logger(name, filename=None, clear_handlers=False, userid_format=True):
     # 防止信息往上级传递 eg: root loger
     # 如果配置上级logger，就会输出两边
     logger.propagate = False
-    if clear_handlers and logger.handlers:
+    if clear_handlers:
         logger.handlers.clear()
 
     # 控制台
@@ -70,41 +76,45 @@ def get_logger(name, filename=None, clear_handlers=False, userid_format=True):
     handler.setFormatter(fmt)
     logger.addHandler(handler)
 
-    # 日志文件
-    # fileSizeJandler = RotatingFileHandler(filepath, maxBytes=1024, backupCount=1)
-    # fileSizeJandler.setFormatter(formatter)
-    # logger.addHandler(fileSizeJandler)
+    if filename:
+        # 日志文件
+        # fileSizeJandler = RotatingFileHandler(filepath, maxBytes=1024, backupCount=1)
+        # fileSizeJandler.setFormatter(formatter)
+        # logger.addHandler(fileSizeJandler)
 
-    # 日志文件 按日期划分 DEBUG 开发使用
-    fileTimeHandler = TimedRotatingFileHandler(filepath + '.debug.log', "D", 1, 10)
-    fileTimeHandler.suffix = "%Y%m%d.log"  # 设置 切分后日志文件名的时间格式 默认 filename+"." + suffix 如果需要更改需要改logging 源码
-    fileTimeHandler.setFormatter(Formatter(formatter))
-    fileTimeHandler.setLevel(logging.DEBUG)
-    logger.addHandler(fileTimeHandler)
+        # 日志文件 按日期划分 DEBUG 开发使用
+        fileTimeHandler = TimedRotatingFileHandler(filepath + '.debug.log', "D", 1, 10)
+        fileTimeHandler.suffix = "%Y%m%d.log"  # 设置 切分后日志文件名的时间格式 默认 filename+"." + suffix 如果需要更改需要改logging 源码
+        fileTimeHandler.setFormatter(Formatter(formatter))
+        fileTimeHandler.setLevel(logging.DEBUG)
+        logger.addHandler(fileTimeHandler)
 
-    # 日志文件 按日期划分 INFO 生产使用
-    fileTimeHandler = TimedRotatingFileHandler(filepath + '.info.log', "D", 1, 10)
-    fileTimeHandler.suffix = "%Y%m%d.log"  # 设置 切分后日志文件名的时间格式 默认 filename+"." + suffix 如果需要更改需要改logging 源码
-    fileTimeHandler.setFormatter(Formatter(formatter))
-    fileTimeHandler.setLevel(logging.INFO)
-    logger.addHandler(fileTimeHandler)
+        # 日志文件 按日期划分 INFO 生产使用
+        fileTimeHandler = TimedRotatingFileHandler(filepath + '.info.log', "D", 1, 10)
+        fileTimeHandler.suffix = "%Y%m%d.log"  # 设置 切分后日志文件名的时间格式 默认 filename+"." + suffix 如果需要更改需要改logging 源码
+        fileTimeHandler.setFormatter(Formatter(formatter))
+        fileTimeHandler.setLevel(logging.INFO)
+        logger.addHandler(fileTimeHandler)
 
-    non_error_filter = logging.Filter()
-    non_error_filter.filter = lambda record: record.levelno < logging.WARNING
-    fileTimeHandler.addFilter(non_error_filter)
+        non_error_filter = logging.Filter()
+        non_error_filter.filter = lambda record: record.levelno < logging.WARNING
+        fileTimeHandler.addFilter(non_error_filter)
 
-    # 日志文件 按日期划分  ERROR 生产使用
-    fileTimeHandler = TimedRotatingFileHandler(filepath + '.error.log', "D", 1, 10)
-    fileTimeHandler.suffix = "%Y%m%d.log"  # 设置 切分后日志文件名的时间格式 默认 filename+"." + suffix 如果需要更改需要改logging 源码
-    fileTimeHandler.setFormatter(Formatter(formatter))
-    fileTimeHandler.setLevel(logging.ERROR)
-    logger.addHandler(fileTimeHandler)
+        # 日志文件 按日期划分  ERROR 生产使用
+        fileTimeHandler = TimedRotatingFileHandler(filepath + '.error.log', "D", 1, 10)
+        fileTimeHandler.suffix = "%Y%m%d.log"  # 设置 切分后日志文件名的时间格式 默认 filename+"." + suffix 如果需要更改需要改logging 源码
+        fileTimeHandler.setFormatter(Formatter(formatter))
+        fileTimeHandler.setLevel(logging.ERROR)
+        logger.addHandler(fileTimeHandler)
 
-    logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
 
     # LoggerAdapter 每个用户可以持有一个adapter. 便可添加额外信息
     # new_loger=LoggerAdapter(logger.logger, {'userid':'liqe'})
-    return LoggerAdapter(logger, {'userid': 'default'})
+    _loggers[key] = logger = LoggerAdapter(logger, {'userid': 'default'})
+    assert isinstance(logger, LoggerAdapter)
+    return logger
+
 
 if __name__ == '__main__':
     a = get_logger('test1')
