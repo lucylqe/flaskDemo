@@ -64,3 +64,5 @@ def make_app():
     #打印urls映射
     print(app.url_map)
     return app
+app = make_app()
+

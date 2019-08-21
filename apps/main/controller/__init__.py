@@ -32,7 +32,13 @@ def test_nav():
 @bp.route('/pagination', methods=['GET', 'POST'])
 def test_pagination():
     from flask_sqlalchemy import Pagination
-    pagination = Pagination(query='', page=1, per_page=5, total=19, items=[1,2,3,4])
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    total = 21
+    start = per_page*(page-1)
+    items = list(range(1, 22))[start:start+per_page]
+    pagination = Pagination(query='', page=page, per_page=per_page, total=total, items=items)
     messages = pagination.items
     return render_template('pagination.html', pagination=pagination, messages=messages)
 
