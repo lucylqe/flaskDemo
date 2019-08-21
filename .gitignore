@@ -8,6 +8,7 @@ __pycache__/
 
 #celery
 celerybeat-schedule.db
+.idea/
 
 # Distribution / packaging
 .Python
