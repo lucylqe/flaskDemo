@@ -47,20 +47,21 @@ def make_app():
     from setting import config
     app.config.from_object(config)
 
-    # 注册试图路由
-    register_blueprints('apps', app)
-
-    # 加载第三方扩展
-    from extension import api, mysqldb, esdb, bootstrap, celery
-    api.init_app(app)
+    # 加载第三方扩展  先完成初始化 再加载蓝图 防止蓝图中用到未初始化的第三方插件
+    from extension import  mysqldb, esdb, bootstrap, celery
     mysqldb.init_app(app)
     esdb.init_app(app)
     bootstrap.init_app(app)
     celery.init_app(app)
 
+    # 注册试图路由
+    register_blueprints('apps', app)
+
+
     #提高蓝图模板优先级
     # app.before_request(improve_blueprint_template_nice(app))
 
     #打印urls映射
-    print(app.url_map)
+    for k in list(sorted(app.url_map.iter_rules(), key=lambda e:str(e))):
+        print(repr(k))
     return app

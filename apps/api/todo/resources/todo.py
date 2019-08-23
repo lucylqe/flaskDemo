@@ -2,6 +2,7 @@ from flask_restful import reqparse, Resource, abort
 from flask_restful import fields, marshal_with, marshal
 
 from apps.api.todo.models.todo import TodoModel
+from apps.auth import auth
 
 TODOS = {
     'todo1': TodoModel(todo_id='todo1', title='看书', desc='盗墓笔记'),
@@ -31,8 +32,11 @@ parser.add_argument('desc', type=str, nullable=True)
 put_parser = parser.copy()
 put_parser.replace_argument('title', required=True)
 
-class Todo(Resource):
 
+class Todo(Resource):
+    urls = ['//todos/<todo_id>']
+
+    @auth.login_required
     @marshal_with(resource_fields)
     def get(self, todo_id):
         abort_if_todo_doesnt_exist(todo_id)
@@ -62,9 +66,9 @@ class Todo(Resource):
         del TODOS[todo_id]
         return '', 204
 
-from apps.auth import auth
-class TodoList(Resource):
 
-    @auth.login_required
+class TodoList(Resource):
+    urls = ['//todos']
+
     def get(self):
         return [marshal(todo, resource_fields) for todo in TODOS.values()]

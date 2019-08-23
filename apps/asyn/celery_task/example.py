@@ -3,7 +3,7 @@ from extension import celery
 from celery import Celery
 assert isinstance(celery, Celery)
 
-@celery.task(bind=True,)
+@celery.task(bind=True)
 def plus_one(self, x):
     print(self, x)
     return x + 1
