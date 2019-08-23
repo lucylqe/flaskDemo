@@ -33,3 +33,4 @@ for mod, resource_map in find_modules_vars(root='apps.api', var='resource_map'):
         resource = AddResource(version=version_var['version'], name=version_var['name'])
         for cls in version_var['resources']:
             resource.add_resource(cls, *getattr(cls, 'urls', []))
+
