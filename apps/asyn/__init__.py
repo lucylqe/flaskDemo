@@ -20,3 +20,19 @@ def concurrent_plus_one():
     for pair, future in futures:
         print('[{}]执行中:{}, 已完成:{}'.format(pair, future.running(), future.done()))
     return str(futures)
+
+
+@bp.route('/time-consuming/<int:delta>')
+def time_consuming(delta):
+    from urllib.error import URLError
+    from urllib.request import urlopen
+    from log import get_logger
+    logger = get_logger()
+    logger.info('IN')
+    try:
+        urlopen('http://10.10.10.10:1234/', timeout=delta)
+    except URLError:
+        pass
+
+    logger.info('OU')
+    return 'ok'

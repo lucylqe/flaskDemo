@@ -16,7 +16,7 @@ resource_fields = {
         'title': fields.String(attribute='title'),
         'description': fields.String(attribute='desc'),
     },
-    'uri': fields.Url('todo')
+    'uri': fields.Url()
 }
 
 
@@ -36,12 +36,12 @@ put_parser.replace_argument('title', required=True)
 class Todo(Resource):
     urls = ['//todos/<todo_id>']
 
-    @auth.login_required
     @marshal_with(resource_fields)
     def get(self, todo_id):
         abort_if_todo_doesnt_exist(todo_id)
         return TODOS[todo_id]
 
+    @auth.login_required
     def post(self, todo_id):
         abort_if_todo_doesnt_exist(todo_id)
         args = parser.parse_args()

@@ -87,18 +87,21 @@ def get_logger(name=None, filename='access', clear_handlers=False, userid_format
         fileTimeHandler.suffix = "%Y%m%d.log"  # 设置 切分后日志文件名的时间格式 默认 filename+"." + suffix 如果需要更改需要改logging 源码
         fileTimeHandler.setFormatter(Formatter(formatter))
         fileTimeHandler.setLevel(logging.DEBUG)
+        non_error_filter = logging.Filter()
+        non_error_filter.filter = lambda record: record.levelno < logging.INFO
+        fileTimeHandler.addFilter(non_error_filter)
         logger.addHandler(fileTimeHandler)
+
 
         # 日志文件 按日期划分 INFO 生产使用
         fileTimeHandler = TimedRotatingFileHandler(filepath + '.info.log', "D", 1, 10)
         fileTimeHandler.suffix = "%Y%m%d.log"  # 设置 切分后日志文件名的时间格式 默认 filename+"." + suffix 如果需要更改需要改logging 源码
         fileTimeHandler.setFormatter(Formatter(formatter))
         fileTimeHandler.setLevel(logging.INFO)
-        logger.addHandler(fileTimeHandler)
-
         non_error_filter = logging.Filter()
         non_error_filter.filter = lambda record: record.levelno < logging.WARNING
         fileTimeHandler.addFilter(non_error_filter)
+        logger.addHandler(fileTimeHandler)
 
         # 日志文件 按日期划分  ERROR 生产使用
         fileTimeHandler = TimedRotatingFileHandler(filepath + '.error.log', "D", 1, 10)

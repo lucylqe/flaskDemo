@@ -48,7 +48,7 @@ def make_app():
     app.config.from_object(config)
 
     # 加载第三方扩展  先完成初始化 再加载蓝图 防止蓝图中用到未初始化的第三方插件
-    from extension import  mysqldb, esdb, bootstrap, celery
+    from extension import mysqldb, esdb, bootstrap, celery
     mysqldb.init_app(app)
     esdb.init_app(app)
     bootstrap.init_app(app)
@@ -57,11 +57,23 @@ def make_app():
     # 注册试图路由
     register_blueprints('apps', app)
 
-
-    #提高蓝图模板优先级
+    # 提高蓝图模板优先级
     # app.before_request(improve_blueprint_template_nice(app))
 
-    #打印urls映射
-    for k in list(sorted(app.url_map.iter_rules(), key=lambda e:str(e))):
-        print(repr(k))
+    # 打印urls映射
+    url_map = list(sorted(app.url_map.iter_rules(), key=lambda e: str(e)))
+    urlstring="\n".join([repr(k) for k in  url_map])
+    logger.info("\n"+urlstring+'\n')
+    import os
+    logger.info("CUDA_VISIBLE_DEVICES[{}] USED_PER_PROCESS[{}]".format(
+        os.environ.get('CUDA_VISIBLE_DEVICES'),
+        os.environ.get('USED_PER_PROCESS')
+    ))
     return app
+
+
+if "GUNICORN_CMD_ARGS" in os.environ:
+    from gevent import monkey
+    flag = monkey.patch_all(subprocess=True)
+    print(flag)
+    app = make_app()
